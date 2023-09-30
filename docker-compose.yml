@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+  central-app:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    networks:
+      - app_network
+      - train_network
+    volumes:
+     - ./app:/usr/src/app
+    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1"
+    depends_on:
+      - db
+      - rabbitmq
+      #- etcd
+      #- redis
+
+  db:
+    image: postgres:14.1-alpine
+    networks:
+      - app_network
+    env_file:
+      - ./.env
+    volumes:
+      - db:/var/lib/postgresql/data
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 5051:80
+    networks:
+      - app_network
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  #etcd:
+  #  image: quay.io/coreos/etcd
+  #  ports:
+  #   - "2379:2379"
+  #  networks:
+  #    - app_network
+  #    - train_network
+  #  command:
+  #    - /usr/local/bin/etcd
+  #    - --advertise-client-urls=http://etcd:2379
+  #    - --listen-client-urls=http://0.0.0.0:2379
+
+  #redis:
+  #  image: redis:latest
+  #  networks:
+  #    - app_network
+  #    - train_network
+  #  ports:
+  #    - "6379:6379"
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "15672:15672" # Management UI
+      - "5672:5672"   # Default RabbitMQ port
+    networks:
+      - app_network
+      - train_network
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+
+networks:
+  train_network:
+      name: train_network
+      external: true
+  app_network:
+    driver: bridge
+
+
+volumes:
+  db:
+    driver: local
