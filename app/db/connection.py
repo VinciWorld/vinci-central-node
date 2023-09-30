@@ -1,4 +1,3 @@
-from decouple import config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.settings.settings import settings
