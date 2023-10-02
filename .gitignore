@@ -99,6 +99,7 @@ celerybeat-schedule
 # Environments
 .env
 .env*
+!.env.sample
 .venv
 env/
 venv/
