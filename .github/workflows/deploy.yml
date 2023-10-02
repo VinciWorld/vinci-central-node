@@ -1,0 +1,72 @@
+name: Deploy Central Node to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to EC2 on master branch push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USERNAME }}
+
+        run: |
+          # Save private key to a file
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST <<EOF
+            pgrep uvicorn | xargs kill
+            rm -rf /home/ubuntu/central-node-app/*
+          EOF
+
+          # Copy files to EC2 instance
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i private_key.pem" --exclude='.git/' --exclude='.github/' --exclude='private_key.pem' --exclude='README.md' --exclude='docker*' ./ $USER@$HOST:/home/ubuntu/central-node-app
+
+          # Optionally run commands on EC2 after copying, e.g., restart a service
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST <<EOF
+            cd /home/ubuntu/central-node-app
+            # Temporarily set the environment variables just for this session
+            echo "setting env vars"
+            export ENV="${{ vars.ENV }}"
+            export NODE_ID="${{ vars.NODE_ID }}"
+            export NODE_DOMAIN="${{ vars.NODE_DOMAIN }}"
+            export FASTAPI_HOST="${{ vars.FASTAPI_HOST }}"
+            export FASTAPI_PORT="${{ vars.FASTAPI_PORT }}"
+            export DB_HOST="${{ vars.DB_HOST }}"
+            export DB_PORT="${{ vars.DB_PORT }}"
+            export POSTGRES_DB="${{ vars.POSTGRES_DB }}"
+            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+            export PGADMIN_DEFAULT_EMAIL="${{ secrets.PGADMIN_DEFAULT_EMAIL }}"
+            export PGADMIN_DEFAULT_PASSWORD="${{ secrets.PGADMIN_DEFAULT_PASSWORD }}"
+            export RABBITMQ_USER="${{ secrets.RABBITMQ_USER }}"
+            export RABBITMQ_PASSWORD="${{ secrets.RABBITMQ_PASSWORD }}"
+            export RABBITMQ_HOST="${{ vars.RABBITMQ_HOST }}"
+            export RABBITMQ_PORT="${{ vars.RABBITMQ_PORT }}"
+            export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+            export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+            
+            echo "poetry use 3.11"
+            poetry env use python3.11
+            echo "poetry env info --path"
+            poetry env info --path
+            echo "poetry activate env"
+            source $(poetry env info --path)/bin/activate
+            echo "poetry install"
+            poetry install
+            echo "uvicorn start"
+            poetry run nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1 &> /home/ubuntu/uvicorn.log &
+          EOF
+          # Cleanup
+          rm -f private_key.pem
