@@ -22,6 +22,7 @@ train_job_router = APIRouter(
     tags=["Train Jobs"]
 )
 
+
 @train_job_router.on_event("startup")
 def on_train_job_router_startup():
 
@@ -55,3 +56,32 @@ async def add_train_job(
 
 
     return response
+
+
+@train_job_router.get("/train-jobs", response_model=list[TrainJobSchema])
+def get_train_jobs(
+    db_session: Session = Depends(get_db_session)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+
+    service = TrainJobService(repository)
+    response = service.get_train_jobs()
+
+
+    return response
+
+
+@train_job_router.delete("/train-jobs/{run_id}", response_model=bool)
+def delete_train_job(
+    run_id: uuid.UUID,
+    db_session: Session = Depends(get_db_session)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+
+    service = TrainJobService(repository)
+    service.delete_train_job(run_id)
+
+
+    return True
