@@ -37,3 +37,21 @@ def on_train_job_router_startup():
     )
     thread.setDaemon(True)
     thread.start()
+
+
+@train_job_router.post("/train-jobs", response_model=TrainJobSchema)
+async def add_train_job(
+    train_job_body: TrainJobBody,
+    
+    db_session: Session = Depends(get_db_session),
+    user: UserSchema = Depends(get_default_user)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+    rabbitmq_client = get_rabbitmq_client()
+
+    service = TrainJobService(repository)
+    response = await service.add_train_job(train_job_body, user, rabbitmq_client)
+
+
+    return response
