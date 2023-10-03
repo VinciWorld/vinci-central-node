@@ -76,17 +76,6 @@ class TrainJobService():
 
         return train_job
     
-
-    def get_train_jobs(self) -> list[TrainJobSchema] | list:
-        
-        train_jobs = self.repository.get_all()
-
-        return train_jobs
-
-
-    def delete_train_job(self, run_id: uuid.UUID) -> None:
-        self.repository.delete_by_run_id(run_id)
-
     
     def update_train_jobs_status(
             self,
@@ -101,6 +90,24 @@ class TrainJobService():
   
         logger.info("Waitting for train jobs...")
 
+
+    def get_train_jobs(self) -> list[TrainJobSchema] | list:
+        
+        train_jobs = self.repository.get_all()
+
+        return train_jobs
+
+
+    def delete_train_job(self, run_id: uuid.UUID) -> None:
+        self.repository.delete_by_run_id(run_id)
+
+
+    def get_last_train_job_by_run_id(self, run_id: uuid.UUID) -> TrainJobSchema:
+        model = self.repository.get_last_train_job_by_run_id(run_id)
+
+        return model
+
+    
 
 def _update_train_job_status(
         channel,
