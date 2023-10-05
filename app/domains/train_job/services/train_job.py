@@ -89,3 +89,46 @@ class TrainJobService():
             logger.info(f"Rabbitmq stream connection lost: {e}")
   
         logger.info("Waitting for train jobs...")
+
+
+    def get_train_jobs(self) -> list[TrainJobSchema] | list:
+        
+        train_jobs = self.repository.get_all()
+
+        return train_jobs
+
+
+    def delete_train_job(self, run_id: uuid.UUID) -> None:
+        self.repository.delete_by_run_id(run_id)
+
+
+    def get_last_train_job_by_run_id(self, run_id: uuid.UUID) -> TrainJobSchema:
+        model = self.repository.get_last_train_job_by_run_id(run_id)
+
+        return model
+
+    
+
+def _update_train_job_status(
+        channel,
+        method,
+        properties,
+        body
+):
+    logger.info(f"callback status")
+    body_json = json.loads(body.decode('utf-8'))
+    run_id = body_json.get("run_id")
+    status = body_json.get("status")
+    logger.info(body_json)
+
+    repository = TrainJobRepository(Session())
+
+    model = repository.update_train_job_status(
+        uuid.UUID(run_id), status
+    )
+
+    if not model:
+        logger.info(f"Not Found train job with run_id: {run_id}")
+        return
+        
+    channel.basic_ack(delivery_tag=method.delivery_tag)

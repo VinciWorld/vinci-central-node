@@ -37,3 +37,64 @@ def on_train_job_router_startup():
     )
     thread.setDaemon(True)
     thread.start()
+   
+
+@train_job_router.post("/train-jobs", response_model=TrainJobSchema)
+async def add_train_job(
+    train_job_body: TrainJobBody,
+    
+    db_session: Session = Depends(get_db_session),
+    user: UserSchema = Depends(get_default_user)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+    rabbitmq_client = get_rabbitmq_client()
+
+    service = TrainJobService(repository)
+    response = await service.add_train_job(train_job_body, user, rabbitmq_client)
+
+
+    return response
+
+
+@train_job_router.get("/train-jobs", response_model=list[TrainJobSchema])
+def get_train_jobs(
+    db_session: Session = Depends(get_db_session)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+
+    service = TrainJobService(repository)
+    response = service.get_train_jobs()
+
+
+    return response
+
+
+@train_job_router.delete("/train-jobs/{run_id}", response_model=bool)
+def delete_train_job(
+    run_id: uuid.UUID,
+    db_session: Session = Depends(get_db_session)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+
+    service = TrainJobService(repository)
+    service.delete_train_job(run_id)
+
+
+    return True
+
+
+@train_job_router.get("/train-jobs/{run_id}", response_model=TrainJobSchema)
+def get_last_train_job_by_run_id(
+    db_session: Session = Depends(get_db_session)
+) -> TrainJobSchema:   
+
+    repository = TrainJobRepository(db_session)
+
+    service = TrainJobService(repository)
+    response = service.get_last_train_job_by_run_id()
+
+
+    return response
