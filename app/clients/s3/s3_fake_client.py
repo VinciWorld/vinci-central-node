@@ -3,7 +3,7 @@ from pathlib import Path
 import uuid
 import zipfile
 from app.clients.s3.interface import S3ClientInterface
-from app.configuration.settings import settings
+from app.settings.settings import settings
 
 
 class S3FakeClient(S3ClientInterface):
