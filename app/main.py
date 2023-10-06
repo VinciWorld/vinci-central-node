@@ -4,15 +4,20 @@ from app.domains.core.models.user import ensure_default_user
 from alembic.config import Config
 from alembic.command import upgrade
 from app.settings.settings import settings
+from app.domains.train_job.controller.train_job import train_job_router
+from app.domains.train_results.controllers.train_results import train_results_router
+from app.domains.train_stream.controllers.train_stream import train_stream_router
+
 import logging
-
-
 
 logging.config.fileConfig('logging.conf', disable_existing_loggers=False)  #type: ignore
 logger = logging.getLogger(__name__) 
 
 
 app = FastAPI()
+app.include_router(train_job_router)
+app.include_router(train_stream_router)
+app.include_router(train_results_router)
 
 
 

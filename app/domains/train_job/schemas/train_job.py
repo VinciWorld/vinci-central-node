@@ -8,6 +8,7 @@ from app.domains.train_job.schemas.train_job_constants import TrainJobStatus, Tr
 
 
 class EnvConfig(BaseModel):
+    agent_id: str
     env_id: str
     num_of_areas: int
 
