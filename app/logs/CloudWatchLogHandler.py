@@ -52,7 +52,7 @@ def setup_cloudwatch_logging(log_group):
     hostname = socket.gethostname()
     current_date = datetime.now().strftime('%Y-%m-%d')
     runner_id = "runnerX?"
-    stream_name = f"{hostname}_{current_date}_{runner_id}"
+    stream_name = f"{hostname}_{current_date}"
 
     # Setting up logging with CloudWatch integration
     ch = CloudWatchLogHandler(
