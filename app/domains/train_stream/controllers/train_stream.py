@@ -8,12 +8,9 @@ from fastapi import APIRouter, Depends, WebSocket
 from app.clients.s3.interface import S3ClientInterface
 from app.clients.s3.s3_client import get_s3_client
 from app.db.connection import get_db_session
-from app.domains.train_job.Repository.train_job import TrainJobRepository
+from app.domains.train_job.repository.train_job import TrainJobRepository
 from app.domains.train_job.schemas.train_job_constants import TrainJobStatus
-
-from app.domains.train_stream.schemas.constants import StreamMessagesId
-from app.domains.train_stream.schemas.train_stream import TrainNodeDataStream
-from app.domains.train_stream.utils.web_socket_manager import websocket_manager
+from app.domains.train_stream.utils.websocket_manager import websocket_manager
 
 logger = logging.getLogger(__name__) 
 
