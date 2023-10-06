@@ -45,7 +45,7 @@ class BaseConfig(BaseSettings):
     rabbitmq_password: str = RABBITMQ_PASSWORD
     rabbitmq_host: str = RABBITMQ_HOST
     rabbitmq_port: str = RABBITMQ_PORT
-    s3_bucket: str = ""
+    s3_bucket: str = "vinci-world-cloud-dev-central-node-bucket"
 
 class DatabaseSettings(BaseConfig):
     @property

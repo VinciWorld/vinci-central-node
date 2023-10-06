@@ -3,9 +3,7 @@ import logging
 import uuid
 
 from fastapi import HTTPException
-
 from app.clients.s3.interface import S3ClientInterface
-
 
 logger = logging.getLogger(__name__) 
 
