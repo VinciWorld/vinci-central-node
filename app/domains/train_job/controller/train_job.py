@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 
 from app.db.connection import get_db_session
-from app.domains.core.models.user import get_default_user
+from app.domains.core.repository.user_repository import get_default_user
 from app.domains.core.schemas.user import UserSchema
 
 from app.domains.train_job.repository.train_job import TrainJobRepository
@@ -35,6 +35,7 @@ def on_train_job_router_startup():
     thread = threading.Thread(
         target=service.update_train_jobs_status, args=(rabbitmq_client,)
     )
+    
     thread.setDaemon(True)
     thread.start()
    
