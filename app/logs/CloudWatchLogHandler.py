@@ -51,7 +51,6 @@ class CloudWatchLogHandler(logging.Handler):
 def setup_cloudwatch_logging(log_group):
     hostname = socket.gethostname()
     current_date = datetime.now().strftime('%Y-%m-%d')
-    runner_id = "runnerX?"
     stream_name = f"{hostname}_{current_date}"
 
     # Setting up logging with CloudWatch integration
@@ -65,7 +64,10 @@ def setup_cloudwatch_logging(log_group):
     root_logger = logging.getLogger()
     # root_logger.setLevel(logging.INFO)
     root_logger.addHandler(ch)
+
+    uvicorn_logger = logging.getLogger('uvicorn')
+    uvicorn_logger.addHandler(ch)
     
-    uicheckapp_logger = logging.getLogger('uicheckapp')
-    uicheckapp_logger.setLevel(logging.INFO)
-    uicheckapp_logger.addHandler(ch)
+    # uicheckapp_logger = logging.getLogger('uicheckapp')
+    # uicheckapp_logger.setLevel(logging.INFO)
+    # uicheckapp_logger.addHandler(ch)
