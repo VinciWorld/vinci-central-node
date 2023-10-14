@@ -3,6 +3,7 @@ import threading
 import uuid
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
+from app.Auth.auth import auth
 
 from app.db.connection import get_db_session
 from app.domains.core.repository.user_repository import get_default_user
@@ -19,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 train_job_router = APIRouter(
     prefix='/api/v1',
-    tags=["Train Jobs"]
+    tags=["Train Jobs"],
+    dependencies=[Depends(auth)]
 )
 
 @train_job_router.on_event("startup")
