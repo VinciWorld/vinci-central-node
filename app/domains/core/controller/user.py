@@ -1,3 +1,4 @@
+import logging
 import string
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from app.domains.core.repository.user_repository import UserRepository
 from app.domains.core.schemas.user import UserCreate, UserSchema, UserUpdate
 import jwt
 from cryptography.fernet import Fernet
+
+logger = logging.getLogger(__name__) 
 
 user_router = APIRouter(
     prefix='/api/v1',
@@ -66,14 +69,16 @@ async def save_user_player_data(
 
 @user_router.post("/user/unity-login")
 def unity_login(
-    user_update: UserUpdate,
+    user_update_body: UserUpdate,
     user: UserSchema = Depends(auth),
     db_session: Session = Depends(get_db_session)
-):
+) -> UserSchema:
 
     repository = UserRepository(db_session)
-    
-    repository.update_user(user.user_id, user_update)
+
+    logger.info(user_update_body)
+
+    repository.update_user(user.user_id, user_update_body)
     user = repository.set_user_active(user.user_id)
 
     

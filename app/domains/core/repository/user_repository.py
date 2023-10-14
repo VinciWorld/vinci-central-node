@@ -66,7 +66,7 @@ class UserRepository():
     def update_user(self, user_id: str, user_update: UserUpdate) -> UserSchema:
 
         user_db = self.db.query(User).filter(User.user_id == user_id).first()
-
+        logger.info(user_db)
         if not user_db:
             return None
 
