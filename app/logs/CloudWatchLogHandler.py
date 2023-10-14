@@ -68,6 +68,10 @@ def setup_cloudwatch_logging(log_group):
     uvicorn_logger = logging.getLogger('uvicorn')
     uvicorn_logger.setLevel(logging.INFO)
     uvicorn_logger.addHandler(ch)
+
+    uvicorn_access_logger = logging.getLogger('uvicorn.access')
+    uvicorn_access_logger.setLevel(logging.INFO)
+    uvicorn_access_logger.addHandler(ch)
     
     # uicheckapp_logger = logging.getLogger('uicheckapp')
     # uicheckapp_logger.setLevel(logging.INFO)
