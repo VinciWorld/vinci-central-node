@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from app.db.connection import Session, get_db_session
 
-
+from decouple import config
 from jose import jwe
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -26,17 +26,16 @@ logger = logging.getLogger(__name__)
 oauth_schema = OAuth2PasswordBearer(tokenUrl='/api/v1/user/login')
 
 
-secret="f3W7NSfJpj+VpzEjgNshDRJhOGZHafFTqd7aswiOjuyOy2qm"
-token="eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..2DVSzAAKewITDBwS.TbK3Qbeq-t9Nza7WamJ0mf-SpOgsrkdYE7zgq-vypqRqFGH0TxQgcLevPShcq6e3PCaZuiotZLiDW0iONZ6IN9Jv85x2v-yojT60kKpW6RK7L4HCJpoHfywoWVDUjbBkNgYr6UylpI8Uv9vOy8k18DADriW0ia21b3WLpqfbTaTrn5tkJKau8B105XH6Wr8WLsWIPFx_NwlEDOciyWoAalA-vAxz5htiqDs00kgWLknVZyWPKP34GsHR7GcbSELpUOFUarDOZ5W-9FOQLJak7OVj3HqZb_ecfgoiBbpQGlfz657yWi-jorFGdqiEJXP_ckRGvzQg23BvXSU3H3qg3SCzosU5XftX9Si346K5qjKm3JEm--zZxV4WgoiksKtlYBdCPywyJEG34_k5j056q5VM2wbEbEOmbysZQfGtbF_0LrBMbzuH0Czj_OTR4-8zeeORmhpyBJQIQhPn0dEAWWoiMimc2mTL_PwnrF51uFiQUqltwwPGyvC4mitB_mp2IkQM0DEekqRFdovpaDc55zXRNA0qT6CvMgxSoJ7bpwEb-fJgslNUrc_7FYK5N4vdH8Ea2sE8VkodLPJrM0UdESmnXMjdLVyYnXLk439SEDlgvapc4TtFBNLQF4KlBIqoIng4NS7hWphPYWkzAngY4iD-Vra6JjEJdLPYPNKmEO1Z5wllLbdw_bgC5XhOBSX3JZRa5S6BzsYTkv2XvY9B8X2P8YviVBEacjkEKCML0RuWUKBE56A-IbG-OXesyGq4alJ1XGPtMu4ROCe518Nh2ZwKrghyUIs3_xiJ_61R2pwMPhAadwF68GOWhyw0Xt24U_8D_8JBUY9gBiXgXnX1Ki5FRmQnRwqxdAARAkLam832Mb8WBhUFOpHKtIrNa0vYxhLSkecAYHFTaP3xzAjeuBfJRna4CtgbrXZrMdyJEsGD31CNHvWRd4VtARQCGCXS32Px6-OOy4eEgGTVKWp3b0s9Oj2s16m0MZlFcKKLKrWktztvlqMAD8Vq-dMh_L0y8Oa9X1mCQ8KbOTYPHfqYCZtTM6SGh7nvjUlc_EH8jLCueGsykJYpcNIUi1Yfh9Ah2H0_Qm7pdOR6UiM5Nj0YhZhSTR5t6BhYSyRYujy_1-1moTqxjl9MmksQTiQFkcS7EhdAxW9cMdN0kTKfMkcI4aDcYorJJwv4G2RDNZd86Zmex_-_dzAlpNiNWMcRJjJZArnjEOM8lIHnVuVM9kxvjz0TzI4sLBtJ3Wq9UbWplN5Sdp-7LjOnSMUlw2iEhvC3p37k.ZRZOPAWeqU_mi9zO5TrcHw"
+secret=config("SECRET")
 
 
 def auth(
     db_session: Session = Depends(get_db_session),
     token = Depends(oauth_schema)
-) -> UserJwtData:
+) -> UserSchema:
     logger.info("************AUTH****************")
     user_repository = UserRepository(db_session) 
-    if settings.env != Environments.LOCAL.value:
+    if settings.env == Environments.LOCAL.value:
         return
     
     try:

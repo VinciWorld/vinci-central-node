@@ -45,9 +45,8 @@ def on_train_job_router_startup():
 @train_job_router.post("/train-jobs", response_model=TrainJobSchema)
 async def add_train_job(
     train_job_body: TrainJobBody,
-    
     db_session: Session = Depends(get_db_session),
-    user: UserSchema = Depends(get_default_user)
+    user: UserSchema = Depends(auth)
 ) -> TrainJobSchema:   
 
     repository = TrainJobRepository(db_session)
@@ -91,13 +90,14 @@ def delete_train_job(
 
 @train_job_router.get("/train-jobs/{run_id}", response_model=TrainJobSchema)
 def get_last_train_job_by_run_id(
+    run_id: uuid.UUID,
     db_session: Session = Depends(get_db_session)
 ) -> TrainJobSchema:   
 
     repository = TrainJobRepository(db_session)
 
     service = TrainJobService(repository)
-    response = service.get_last_train_job_by_run_id()
+    response = service.get_most_recent_train_job_by_run_id(run_id)
 
-
+    logger.info(f"response last job: {response}")
     return response

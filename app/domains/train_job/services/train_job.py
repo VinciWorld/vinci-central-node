@@ -102,10 +102,10 @@ class TrainJobService():
         self.repository.delete_by_run_id(run_id)
 
 
-    def get_last_train_job_by_run_id(self, run_id: uuid.UUID) -> TrainJobSchema:
-        model = self.repository.get_last_train_job_by_run_id(run_id)
+    def get_most_recent_train_job_by_run_id(self, run_id: uuid.UUID) -> TrainJobSchema:
+        model = self.repository.get_most_recent_train_job_by_run_id(run_id)
 
-        return model
+        return TrainJobSchema.model_validate(model)
 
     
 
