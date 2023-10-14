@@ -8,8 +8,8 @@ from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Depends, File, UploadFile
 from app.clients.s3.interface import S3ClientInterface
 from app.clients.s3.s3_client import get_s3_client
+from app.domains.core.repository.user_repository import get_default_user
 
-from app.domains.core.models.user import get_default_user
 from app.domains.core.schemas.user import UserSchema
 
 from app.domains.train_job.schemas.train_job import  TrainJobSchema

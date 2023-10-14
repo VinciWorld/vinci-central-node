@@ -3,9 +3,10 @@ import threading
 import uuid
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
+from app.Auth.auth import auth
 
 from app.db.connection import get_db_session
-from app.domains.core.models.user import get_default_user
+from app.domains.core.repository.user_repository import get_default_user
 from app.domains.core.schemas.user import UserSchema
 
 from app.domains.train_job.repository.train_job import TrainJobRepository
@@ -19,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 train_job_router = APIRouter(
     prefix='/api/v1',
-    tags=["Train Jobs"]
+    tags=["Train Jobs"],
+    dependencies=[Depends(auth)]
 )
 
 @train_job_router.on_event("startup")
@@ -35,6 +37,7 @@ def on_train_job_router_startup():
     thread = threading.Thread(
         target=service.update_train_jobs_status, args=(rabbitmq_client,)
     )
+    
     thread.setDaemon(True)
     thread.start()
    
@@ -42,9 +45,8 @@ def on_train_job_router_startup():
 @train_job_router.post("/train-jobs", response_model=TrainJobSchema)
 async def add_train_job(
     train_job_body: TrainJobBody,
-    
     db_session: Session = Depends(get_db_session),
-    user: UserSchema = Depends(get_default_user)
+    user: UserSchema = Depends(auth)
 ) -> TrainJobSchema:   
 
     repository = TrainJobRepository(db_session)
@@ -88,13 +90,14 @@ def delete_train_job(
 
 @train_job_router.get("/train-jobs/{run_id}", response_model=TrainJobSchema)
 def get_last_train_job_by_run_id(
+    run_id: uuid.UUID,
     db_session: Session = Depends(get_db_session)
 ) -> TrainJobSchema:   
 
     repository = TrainJobRepository(db_session)
 
     service = TrainJobService(repository)
-    response = service.get_last_train_job_by_run_id()
+    response = service.get_most_recent_train_job_by_run_id(run_id)
 
-
+    logger.info(f"response last job: {response}")
     return response

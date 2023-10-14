@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 import uuid
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
+from app.domains.core.models.user import User
 from app.domains.core.schemas.user import UserSchema
 from app.domains.train_job.models.train_job import TrainJob
 from app.domains.train_job.schemas.train_job import TrainJobCreate, TrainJobSchema
@@ -9,7 +11,18 @@ from app.domains.train_job.schemas.train_job import TrainJobCreate, TrainJobSche
 class TrainJobRepository():
     def __init__(self, db_session: Session):
         self.db_session = db_session
+    
 
+    def get_most_recent_train_job_by_run_id(self, run_id: uuid.UUID) -> TrainJobSchema:
+        model = self.db_session.query(TrainJob)\
+            .filter_by(run_id=run_id)\
+            .order_by(desc(TrainJob.created_at))\
+            .first()
+
+        if not model:
+            raise HTTPException(status_code=404, detail=f"No train jobs found for run_id: {run_id}")
+
+        return TrainJobSchema.model_validate(model, from_attributes=True)
 
     def get_by_run_id(
             self,
@@ -40,9 +53,12 @@ class TrainJobRepository():
 
             ) -> TrainJobSchema:
 
+
+        user_db = self.db_session.query(User).filter_by(user_id=user.user_id).first()
+
         model = TrainJob(
             **train_job.model_dump(),
-            created_by_id=user.id
+            created_by_id=user_db.id
             )
 
         self.db_session.add(model)
