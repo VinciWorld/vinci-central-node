@@ -66,6 +66,6 @@ def setup_cloudwatch_logging(log_group):
     # root_logger.setLevel(logging.INFO)
     root_logger.addHandler(ch)
     
-    # uicheckapp_logger = logging.getLogger('uicheckapp')
-    # uicheckapp_logger.setLevel(logging.INFO)
-    # uicheckapp_logger.addHandler(ch)
+    uicheckapp_logger = logging.getLogger('uicheckapp')
+    uicheckapp_logger.setLevel(logging.INFO)
+    uicheckapp_logger.addHandler(ch)
