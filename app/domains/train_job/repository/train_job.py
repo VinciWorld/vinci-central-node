@@ -23,6 +23,18 @@ class TrainJobRepository():
             raise HTTPException(status_code=404, detail=f"No train jobs found for run_id: {run_id}")
 
         return TrainJobSchema.model_validate(model, from_attributes=True)
+    
+    def get_most_recent_train_job_by_user_id(self, user_id: uuid.UUID) -> TrainJobSchema | None:
+        model = self.db_session.query(TrainJob)\
+            .filter_by(created_by_id=user_id)\
+            .order_by(desc(TrainJob.created_at))\
+            .first()
+
+        if not model:
+            return None
+            logger.info(f"No train jobs found for user_id: {user_id}")
+
+        return TrainJobSchema.model_validate(model, from_attributes=True)
 
     def get_by_run_id(
             self,
