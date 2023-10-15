@@ -36,11 +36,11 @@ class UserSchema(UserBase):
 
 
 class UserJwtData(BaseModel):
-    id: Optional[str]
-    name: Optional[str]
+    id: str
+    name: str
     email: Optional[str]  = None
     emailVerified: Optional[datetime]  = None
-    image: Optional[str]  = None
+    image: str
     walletPublicKey: Optional[str]  = None
     username: Optional[str]  = None
     bio: Optional[str]  = None
