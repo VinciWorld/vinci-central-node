@@ -39,7 +39,7 @@ async def ws_client_stream(
         logger.info(f"Run_id: {run_id}")
 
         websocket_manager.add(run_id, ws_client)
-        logger.info(f"ws_clinet: {websocket_manager.get_by_id(run_id)}")
+        logger.info(f"ws_client: {websocket_manager.get_by_id(run_id)}")
 
         train_job_status = TrainJobStatus.SUBMITTED
         while train_job_status != TrainJobStatus.SUCCEEDED and train_job_status != TrainJobStatus.FAILED:
