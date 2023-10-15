@@ -38,15 +38,15 @@ class UserSchema(UserBase):
 class UserJwtData(BaseModel):
     id: Optional[str]
     name: Optional[str]
-    email: Optional[str]
-    emailVerified: Optional[datetime]
-    image: Optional[str]
-    walletPublicKey: Optional[str]
-    username: Optional[str]
-    bio: Optional[str]
-    role: Optional[str]
+    email: Optional[str]  = None
+    emailVerified: Optional[datetime]  = None
+    image: Optional[str]  = None
+    walletPublicKey: Optional[str]  = None
+    username: Optional[str]  = None
+    bio: Optional[str]  = None
+    role: Optional[str]  = None
     registeredAt: datetime
-    jwt: Optional[str]
-    iat: Optional[int]
-    exp: Optional[int]
-    jti: Optional[str]
+    jwt: Optional[str] = None
+    iat: Optional[int] = None
+    exp: Optional[int] = None
+    jti: Optional[str] = None
