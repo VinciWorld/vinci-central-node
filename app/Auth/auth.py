@@ -43,7 +43,6 @@ def auth(
 
         jwt_dict = json.loads(jwt_decoded.decode('utf-8'))
         user_jwt_data = UserJwtData(**jwt_dict)
-        logger.info(user_jwt_data)
 
         existing_user = user_repository.get_by_user_id(user_jwt_data.id)
 
