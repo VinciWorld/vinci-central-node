@@ -30,7 +30,6 @@ async def save_nn_model(
     run_id: uuid.UUID,
     nn_model: UploadFile = File(...),
     s3_client: S3ClientInterface = Depends(get_s3_client),
-    user: UserSchema = Depends(get_default_user)
 ) -> TrainJobSchema:
 
     model_data = await nn_model.read()
@@ -62,7 +61,6 @@ async def save_train_results(
     run_id: uuid.UUID,
     results_zip: UploadFile = File(...),
     s3_client: S3ClientInterface = Depends(get_s3_client),
-    user: UserSchema = Depends(get_default_user)
 ) -> TrainJobSchema:
 
     results_zip_data = await results_zip.read()

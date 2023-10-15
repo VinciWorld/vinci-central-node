@@ -123,6 +123,8 @@ def _update_train_job_status(
 
     repository = TrainJobRepository(Session())
 
+    logger.info(f"Update train job status run_id: {run_id} - status: {status}")
+
     model = repository.update_train_job_status(
         uuid.UUID(run_id), status
     )
