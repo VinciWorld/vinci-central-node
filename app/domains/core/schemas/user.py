@@ -45,8 +45,8 @@ class UserJwtData(BaseModel):
     username: Optional[str]
     bio: Optional[str]
     role: Optional[str]
-    registeredAt: Optional[datetime]
+    registeredAt: datetime
     jwt: Optional[str]
-    iat: Optional[str]
-    exp: Optional[str]
+    iat: Optional[int]
+    exp: Optional[int]
     jti: Optional[str]

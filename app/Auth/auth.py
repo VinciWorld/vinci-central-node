@@ -35,7 +35,7 @@ def auth(
 ) -> UserSchema:
     logger.info("************AUTH****************")
     user_repository = UserRepository(db_session) 
-    if settings.env == Environments.LOCAL.value:
+    if settings.env != Environments.LOCAL.value:
         return
     
     try:
