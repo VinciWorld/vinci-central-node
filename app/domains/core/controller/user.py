@@ -77,6 +77,7 @@ def unity_login(
     repository = UserRepository(db_session)
 
     logger.info(user_update_body)
+    logger.info(user)
 
     repository.update_user(user.user_id, user_update_body)
     user = repository.set_user_active(user.user_id)
