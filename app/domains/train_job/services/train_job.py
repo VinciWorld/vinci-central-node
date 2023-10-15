@@ -3,6 +3,8 @@ import json
 import logging
 import uuid
 
+from fastapi import HTTPException
+
 from app.clients.rabbitmq_client import RabbitMQClient
 from app.db.connection import Session, get_db_session
 from app.domains.core.schemas.user import UserSchema
@@ -31,21 +33,36 @@ class TrainJobService():
     ) -> TrainJobSchema:
            
         run_id = None
+        job_type = TrainJobType.CREATE
+
+        train_job_db = self.repository.get_most_recent_train_job_by_user_id(user.id)
+
+        if train_job_db is not None:
+            # Each user can only have on job training 
+            if is_job_in_initial_statuses(train_job_db):
+                return train_job_db
 
         # 1 - Check if the is a job with the provided run id
         if train_job_body.run_id is not None:
-            train_job = self.repository.get_by_run_id(train_job_body.run_id)
-            run_id = train_job.run_id
-
-            if train_job.job_status == TrainJobStatus.RUNNING:
-                logger.info(f"Train job is already Running: {train_job.run_id}")
-
-                return train_job
             
-            elif train_job.job_status == TrainJobStatus.SUCCEEDED:
-                logger.info(f"Train job is succedded: {train_job.run_id}")
+            if train_job_db is not None:
+                run_id = train_job_db.run_id
 
-                return train_job
+                if train_job_db.job_status == TrainJobStatus.SUCCEEDED:
+                    logger.info(f"Last Train job is SUCCEEDED! {train_job_db.run_id}")
+                    logger.info(f"Preparing to resume {train_job_db.run_id}")
+                    job_type = TrainJobType.RESUME
+                    
+                elif train_job_db.job_status == TrainJobStatus.FAILED:
+                    logger.info(f"Last Train job is FAILED! {train_job_db.run_id}")
+                    return train_job
+
+                else:
+                    logger.info(f"Train job is running: {train_job_db.run_id}")
+                    return train_job_db
+                
+            else:
+                raise HTTPException(status_code=404, detail=f"No train jobs found for user: {user.id}")
 
         else:
         # 2 - Generate a new run id
@@ -53,7 +70,7 @@ class TrainJobService():
 
         train_job_queue = TrainJobQueue(
             run_id=run_id,
-            job_type=TrainJobType.CREATE,
+            job_type=job_type,
             agent_config=train_job_body.agent_config,
             nn_model_config=train_job_body.nn_model_config,
             env_config=train_job_body.env_config,
@@ -61,17 +78,19 @@ class TrainJobService():
             central_node_url=settings.node_domain # Switch to an env variable
         )
 
-        # 3 - Add train job to queue
-        rabbitmq_client.enqueue_train_job(train_job_queue, 2)
-        logger.info(f"Train job added to the queue: {train_job_queue.run_id}")
-
-        # 4 - Save Train job on db
+        # 3 - Save Train job on db
         train_job_created = TrainJobCreate(
             **train_job_queue.__dict__,
             job_status=TrainJobStatus.SUBMITTED,
         )
         train_job = self.repository.add_train_job(train_job_created, user)
         logger.info(f"Train job added to db: {train_job_created}")
+
+        # 4 - Add train job to queue
+        rabbitmq_client.enqueue_train_job(train_job_queue, 2)
+        logger.info(f"Train job added to the queue: {train_job_queue.run_id}")
+  
+ 
      
 
         return train_job
@@ -134,3 +153,11 @@ def _update_train_job_status(
         return
         
     channel.basic_ack(delivery_tag=method.delivery_tag)
+
+
+def is_job_in_initial_statuses(train_job: TrainJobSchema) -> bool:
+    return train_job.job_status in {
+        TrainJobStatus.SUBMITTED, 
+        TrainJobStatus.LAUNCHED, 
+        TrainJobStatus.STARTING
+    }

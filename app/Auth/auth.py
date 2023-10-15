@@ -35,8 +35,8 @@ def auth(
 ) -> UserSchema:
     logger.info("************AUTH****************")
     user_repository = UserRepository(db_session) 
-    if settings.env == Environments.LOCAL.value:
-        return
+    #if settings.env != Environments.LOCAL.value:
+    #    return
     
     try:
         jwt_decoded = decrypt_jwe(token, secret)
