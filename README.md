@@ -11,7 +11,6 @@
    - [Environment Configuration](#environment-configuration)
    - [Usage](#usage)
 5. [Conclusion](#conclusion)
-6. [Support and Contribution](#support-and-contribution)
 
 ---
 
