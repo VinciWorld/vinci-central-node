@@ -97,6 +97,7 @@ def get_rabbitmq_client() -> RabbitMQClient:
 
         parameters = pika.URLParameters(rabbitmq_settings.url)
         parameters.ssl_options = pika.SSLOptions(context=rabbitmq_settings.ssl_context)
+        parameters.heartbeat = 60
 
         connection = pika.BlockingConnection(parameters)
         return RabbitMQClient(connection) 
