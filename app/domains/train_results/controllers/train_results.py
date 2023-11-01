@@ -6,7 +6,7 @@ import threading
 import uuid
 from fastapi.responses import StreamingResponse
 
-from fastapi import APIRouter, Depends, File, Response, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from app.Auth.auth import auth
 from app.clients.s3.interface import S3ClientInterface
 from app.clients.s3.s3_client import get_s3_client
