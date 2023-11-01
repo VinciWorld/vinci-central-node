@@ -12,11 +12,11 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = 'user'
     id = Column(Uuid, primary_key=True, index=True, default=uuid.uuid4)
+    external_id = Column(String, index=True, nullable=False)
     pubkey = Column(String, index=True, nullable=False)
     username = Column(String, index=True, nullable=False)
     bio = Column(String, index=True, nullable=True)
     image_url = Column(String, index=True, nullable=True)
-    user_id = Column(String, index=True, nullable=False)
     status = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     player_data = Column(JSON, nullable=True)

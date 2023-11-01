@@ -13,7 +13,7 @@ class UserBase(BaseModel):
     player_data: Optional[str] = None
 
 class UserCreate(UserBase):
-    user_id: str
+    external_id: str
     is_admin: bool = False
     status: bool = True
     pass
@@ -25,7 +25,7 @@ class UserUpdate(UserBase):
 
 class UserSchema(UserBase):
     id: uuid.UUID
-    user_id: str
+    external_id: str
     is_admin: bool = False
     status: bool = True
     created_at: datetime

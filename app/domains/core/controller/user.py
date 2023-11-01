@@ -47,7 +47,7 @@ async def get_user(
     
     repository = UserRepository(db_session)
 
-    user = repository.get_by_user_id(user.id)
+    user = repository.get_by_external_id(user.id)
 
     return user
 
@@ -78,8 +78,8 @@ def unity_login(
 
     logger.info(user_update_body)
 
-    repository.update_user(user.user_id, user_update_body)
-    user = repository.set_user_active(user.user_id)
+    repository.update_user(user.external_id, user_update_body)
+    user = repository.set_user_active(user.external_id)
 
     
     if user is None:
