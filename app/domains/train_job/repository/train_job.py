@@ -32,7 +32,7 @@ class TrainJobRepository():
 
         if not model:
             return None
-            logger.info(f"No train jobs found for user_id: {user_id}")
+         
 
         return TrainJobSchema.model_validate(model, from_attributes=True)
 
@@ -43,8 +43,9 @@ class TrainJobRepository():
         model = self.db_session.query(TrainJob).filter_by(run_id=run_id).first()
 
         if not model:
-            raise HTTPException(status_code=404,
-                                 detail=f"Train job with run_id: {run_id} not found.")
+            return None
+            #raise HTTPException(status_code=404,
+            #                     detail=f"Train job with run_id: {run_id} not found.")
         
         return TrainJobSchema.model_validate(model, from_attributes=True)
     
@@ -66,7 +67,7 @@ class TrainJobRepository():
             ) -> TrainJobSchema:
 
 
-        user_db = self.db_session.query(User).filter_by(user_id=user.user_id).first()
+        user_db = self.db_session.query(User).filter_by(id=user.id).first()
 
         model = TrainJob(
             **train_job.model_dump(),

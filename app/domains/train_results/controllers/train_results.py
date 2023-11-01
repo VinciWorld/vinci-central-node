@@ -1,19 +1,23 @@
 from io import BytesIO
 import io
+import json
 import logging
 import threading
 import uuid
 from fastapi.responses import StreamingResponse
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Response, UploadFile
+from app.Auth.auth import auth
 from app.clients.s3.interface import S3ClientInterface
 from app.clients.s3.s3_client import get_s3_client
+from app.db.connection import Session, get_db_session
 from app.domains.core.repository.user_repository import get_default_user
 
 from app.domains.core.schemas.user import UserSchema
+from app.domains.train_job.repository.train_job import TrainJobRepository
 
 from app.domains.train_job.schemas.train_job import  TrainJobSchema
-from app.domains.train_results.services.train_results import NNModelService
+from app.domains.train_results.services.train_results import TrainResultsService
 
 
 logger = logging.getLogger(__name__) 
@@ -35,38 +39,69 @@ async def save_nn_model(
     model_data = await nn_model.read()
     model_bytes = BytesIO(model_data)
 
-    service = NNModelService(s3_client)
+    service = TrainResultsService(s3_client)
     response = await service.save_nn_mode(run_id, model_bytes)
 
     return response
 
 
-@train_results_router.get("/train-jobs/{run_id}/nn-model", response_model=list[TrainJobSchema])
-async def get_nn_model(
+@train_results_router.get("/train-jobs/{run_id}/nn-model")
+async def get_user_train_nn_model(
     run_id: uuid.UUID,
+    user: UserSchema = Depends(auth),
+    db_session: Session = Depends(get_db_session),
     s3_client: S3ClientInterface = Depends(get_s3_client)
 ) -> StreamingResponse:
     
-    model_bytes = s3_client.get_nn_model(run_id)
+    train_job_repository = TrainJobRepository(db_session)
+
+    service = TrainResultsService(s3_client)
+    response = await service.get_user_train_nn_model(run_id, user.id, train_job_repository)
+
+    return response
+
+
+@train_results_router.get("/train-jobs/{run_id}/checkpoint", response_model=list[TrainJobSchema])
+async def get_user_train_checkpoint(
+    run_id: uuid.UUID,
+    user: UserSchema = Depends(auth),
+    db_session: Session = Depends(get_db_session),
+    s3_client: S3ClientInterface = Depends(get_s3_client)
+) -> StreamingResponse:
     
-    model_data = model_bytes.getvalue()
+    train_job_repository = TrainJobRepository(db_session)
 
-    return StreamingResponse(io.BytesIO(model_data), media_type="application/octet-stream", headers={
-        "Content-Disposition": f"attachment; filename=model_{run_id}.onnx"
-    })
+    service = TrainResultsService(s3_client)
+    response = service.get_user_train_checkpoint(run_id, user.id, train_job_repository)
+
+    return response
 
 
-@train_results_router.put("/train-jobs/{run_id}/results", response_model=bool)
+@train_results_router.get("/train-jobs/{run_id}/client-results", response_class=Response)
+async def get_user_train_results(
+    run_id: uuid.UUID,
+    db_session: Session = Depends(get_db_session),
+    s3_client: S3ClientInterface = Depends(get_s3_client),
+    user: UserSchema = Depends(auth)
+):
+    train_job_repository = TrainJobRepository(db_session)
+
+    service = TrainResultsService(s3_client)
+    response = service.get_user_train_results(run_id, user.id, train_job_repository)
+
+    return response
+
+@train_results_router.post("/train-jobs/{run_id}/results", response_model=bool)
 async def save_train_results(
     run_id: uuid.UUID,
     results_zip: UploadFile = File(...),
+    db_session: Session = Depends(get_db_session),
     s3_client: S3ClientInterface = Depends(get_s3_client),
 ) -> TrainJobSchema:
 
-    results_zip_data = await results_zip.read()
-    results_zip_bytes = BytesIO(results_zip_data)
+    repository = TrainJobRepository(db_session)
 
-    service = NNModelService(s3_client)
-    response = await service.save_train_results(run_id, results_zip_bytes)
+    service = TrainResultsService(s3_client)
+    response = await service.save_train_results(run_id, results_zip, repository)
 
     return response

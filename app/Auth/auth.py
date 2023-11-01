@@ -33,7 +33,6 @@ def auth(
     db_session: Session = Depends(get_db_session),
     token = Depends(oauth_schema)
 ) -> UserSchema:
-    logger.info("************AUTH****************")
     user_repository = UserRepository(db_session) 
     #if settings.env != Environments.LOCAL.value:
     #    return
@@ -44,14 +43,14 @@ def auth(
         jwt_dict = json.loads(jwt_decoded.decode('utf-8'))
         user_jwt_data = UserJwtData(**jwt_dict)
 
-        existing_user = user_repository.get_by_user_id(user_jwt_data.id)
+        existing_user = user_repository.get_by_external_id(user_jwt_data.id)
 
         if existing_user:
             return existing_user
 
         user_data = map_user_data_from_jwt(user_jwt_data)
 
-        logger.info(f"************AUTH**************** {user_data}")
+        logger.info(f"Register new user {user_data}")
 
         return user_repository.register_user(user_data)
 
@@ -88,7 +87,7 @@ def get_derive_encryption_key(secret: str):
 
 def map_user_data_from_jwt(jwt_data: UserJwtData) -> UserCreate:
     return UserCreate(
-        user_id=jwt_data.id,  
+        external_id=jwt_data.id,  
         pubkey="",
         username=jwt_data.name,  
         image_url=jwt_data.image,

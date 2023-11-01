@@ -35,7 +35,7 @@ class S3Client(S3ClientInterface):
 
         return nn_model
     
-    def extract_and_upload_zip_folder(self, run_id: uuid.UUID, zip_file: BytesIO):
+    def extract_and_save_zip_folder(self, run_id: uuid.UUID, zip_file: BytesIO):
         """Upload directory"""
         pass
 
