@@ -61,7 +61,7 @@ async def get_user_train_nn_model(
     return response
 
 
-@train_results_router.get("/train-jobs/{run_id}/checkpoint", response_model=list[TrainJobSchema])
+@train_results_router.get("/train-jobs/{run_id}/checkpoint")
 async def get_user_train_checkpoint(
     run_id: uuid.UUID,
     user: UserSchema = Depends(auth),
@@ -72,12 +72,12 @@ async def get_user_train_checkpoint(
     train_job_repository = TrainJobRepository(db_session)
 
     service = TrainResultsService(s3_client)
-    response = service.get_user_train_checkpoint(run_id, user.id, train_job_repository)
+    response = await service.get_user_train_checkpoint(run_id, user.id, train_job_repository)
 
     return response
 
 
-@train_results_router.get("/train-jobs/{run_id}/client-results", response_class=Response)
+@train_results_router.get("/train-jobs/{run_id}/train-results")
 async def get_user_train_results(
     run_id: uuid.UUID,
     db_session: Session = Depends(get_db_session),
@@ -87,7 +87,7 @@ async def get_user_train_results(
     train_job_repository = TrainJobRepository(db_session)
 
     service = TrainResultsService(s3_client)
-    response = service.get_user_train_results(run_id, user.id, train_job_repository)
+    response = await service.get_user_train_results(run_id, user.id, train_job_repository)
 
     return response
 
