@@ -87,16 +87,22 @@ class S3FakeClient(S3ClientInterface):
         output_path.mkdir(parents=True, exist_ok=True)
 
         with zipfile.ZipFile(zip_file) as zf:
-            for member in zf.infolist():
-                # Extract only if it's a file (not a directory)
-                if not member.is_dir():
-                    # Get the target path (without the zip's root directory)
-                    target_path = output_path / Path(*Path(member.filename).parts[1:])
-                    # Make sure the target directory exists
-                    target_path.parent.mkdir(parents=True, exist_ok=True)
-                    # Extract the file to the target path
-                    with zf.open(member, 'r') as source, open(target_path, 'wb') as target:
-                        target.write(source.read())
+                for member in zf.infolist():
+                    logging.info(f"Extracting member: {member.filename}")
+                    target_path = output_path / Path(member.filename).name
+                    logging.info(f"Target path: {target_path}")
+
+                    if member.is_dir():
+                        logging.info(f"Creating directory: {target_path}")
+                        target_path.mkdir(parents=True, exist_ok=True)
+                    else:
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        if target_path.is_dir():
+                            logging.error(f"Expected a file path, but got a directory: {target_path}")
+                            continue
+                        logging.info(f"Writing file to: {target_path}")
+                        with zf.open(member, 'r') as source, open(target_path, 'wb') as target:
+                            target.write(source.read())
 
         #TODO: activate this in the future
         runs_path = self.bucket_path / "runs" / Path(str(user_id)) / Path(str(run_id))
