@@ -31,8 +31,8 @@ class UserRepository():
 
         return UserSchema.model_validate(model)
         
-    def set_user_active(self, user_id_dapp: str) -> UserSchema:
-        model = self.db.query(User).filter_by(user_id=user_id_dapp).first()
+    def set_user_active(self, user_id: str) -> UserSchema:
+        model = self.db.query(User).filter_by(id=user_id).first()
 
         if not model:
             return None
@@ -56,7 +56,6 @@ class UserRepository():
     def update_user(self, user_id: str, user_update: UserUpdate) -> UserSchema:
 
         user_db = self.db.query(User).filter(User.id == user_id).first()
-        logger.info(user_db)
         if not user_db:
             return None
 
@@ -88,12 +87,13 @@ def ensure_default_user(db: Session):
     default_user = db.query(User).filter_by(id="f76b7d2c-8643-4633-afe5-184430818ccf").first()
     if not default_user:
         default_user = User(
-            external_id="f76b7d2c-8643-4633-afe5-184430818ccf",
+            id="f76b7d2c-8643-4633-afe5-184430818ccf",
+            external_id="",
             pubkey="32423",
             username="costasdasd",
             status=True,
             is_admin=True
-            )
+        )
         db.add(default_user)
         db.commit()
 

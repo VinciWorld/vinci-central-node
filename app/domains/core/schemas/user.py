@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
-   
     pubkey: str
     username: str 
     bio: Optional[str] = None
