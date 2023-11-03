@@ -46,6 +46,7 @@ def auth(
         existing_user = user_repository.get_by_external_id(user_jwt_data.id)
 
         if existing_user:
+            logger.info(f"Existing user: {existing_user}")
             return existing_user
 
         user_data = map_user_data_from_jwt(user_jwt_data)

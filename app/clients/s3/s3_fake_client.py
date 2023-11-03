@@ -43,7 +43,7 @@ class S3FakeClient(S3ClientInterface):
     def get_user_train_results(self, run_id: uuid.UUID, user_id: uuid.UUID) -> Tuple[BytesIO, BytesIO]:
         recent_folder = self._get_most_recent_folder(run_id, user_id)
         model_path = recent_folder / "model.onnx"
-        metrics_path = recent_folder / "metrics.json"
+        metrics_path = recent_folder / "metrics_data.json"
 
         if not model_path.exists() or not metrics_path.exists():
             raise FileNotFoundError(f"No model or metrics found for run_id: {run_id}")

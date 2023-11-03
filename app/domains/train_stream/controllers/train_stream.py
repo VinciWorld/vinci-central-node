@@ -58,11 +58,12 @@ async def ws_client_stream(
             
             await asyncio.sleep(2)
 
-        nn_model = s3_client.get_nn_model(run_id)
+        nn_model = s3_client.get_nn_model(run_id, train_job.created_by.id)
         await ws_client.send_bytes(nn_model)
     
     
     except Exception as e:
+        await ws_client.send_bytes("error")
         logger.info(f"ERROR: {e}")
     finally:
         try:
