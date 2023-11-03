@@ -106,15 +106,15 @@ class TrainResultsService():
             }
 
             def content_generator():
-                yield f"--{boundary}\r\n"
-                yield f"Content-Disposition: form-data; name=model; filename=model_{run_id}.onnx\r\n"
-                yield f"Content-Type: application/octet-stream\r\n\r\n"
+                yield bytes(f"--{boundary}\r\n", 'utf-8')
+                yield bytes(f"Content-Disposition: form-data; name=model; filename=model.onnx\r\n", 'utf-8')
+                yield bytes("Content-Type: application/octet-stream\r\n\r\n", 'utf-8')
                 yield model_bytes.getvalue()
-                yield f"\r\n--{boundary}\r\n"
-                yield f"Content-Disposition: form-data; name=metrics; filename=metrics_{run_id}.json\r\n"
-                yield f"Content-Type: application/json\r\n\r\n"
+                yield bytes(f"\r\n--{boundary}\r\n", 'utf-8')
+                yield bytes(f"Content-Disposition: form-data; name=metrics; filename=metrics.json\r\n", 'utf-8')
+                yield bytes("Content-Type: application/json\r\n\r\n", 'utf-8')
                 yield metrics_bytes.getvalue()
-                yield f"\r\n--{boundary}--"
+                yield bytes(f"\r\n--{boundary}--", 'utf-8')
 
             return StreamingResponse(content_generator(), headers=headers)
 
