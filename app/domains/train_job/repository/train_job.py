@@ -83,9 +83,10 @@ class TrainJobRepository():
         return TrainJobSchema.model_validate(model, from_attributes=True)
 
 
-    
-    def update_train_job_status(self, run_id: uuid.UUID, status: str) -> TrainJobSchema | None:
-        model = self.db_session.query(TrainJob).filter_by(run_id=run_id).first()
+    def update_last_train_job_status(self, run_id: uuid.UUID, status: str) -> TrainJobSchema | None:
+        model = self.db_session.query(TrainJob).filter_by(run_id=run_id)\
+        .order_by(desc(TrainJob.created_at))\
+        .first()
         
 
         if not model:

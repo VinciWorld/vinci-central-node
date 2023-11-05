@@ -40,6 +40,7 @@ class TrainJobService():
         if train_job_db is not None:
             # Each user can only have on job training 
             if is_job_in_initial_statuses(train_job_db):
+                logger.info(f"already training {train_job_db.job_status}")
                 return train_job_db
 
         # 1 - Check if the is a job with the provided run id
@@ -54,8 +55,7 @@ class TrainJobService():
                     job_type = TrainJobType.RESUME
                     
                 elif train_job_db.job_status == TrainJobStatus.FAILED:
-                    logger.info(f"Last Train job is FAILED! {train_job_db.run_id}")
-                    return train_job
+                    logger.info(f"Last Train job is FAILED! {train_job_db.run_id} Creating a new one...")
 
                 else:
                     logger.info(f"Train job is running: {train_job_db.run_id}")
@@ -90,9 +90,6 @@ class TrainJobService():
         rabbitmq_client.enqueue_train_job(train_job_queue, 2)
         logger.info(f"Train job added to the queue: {train_job_queue.run_id}")
   
- 
-     
-
         return train_job
     
     
@@ -143,7 +140,7 @@ def _update_train_job_status(
 
     logger.info(f"Update train job status run_id: {run_id} - status: {status}")
 
-    model = repository.update_train_job_status(
+    model = repository.update_last_train_job_status(
         uuid.UUID(run_id), status
     )
 
