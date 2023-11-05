@@ -64,7 +64,6 @@ async def get_user_train_nn_model(
 @train_results_router.get("/train-jobs/{run_id}/checkpoint")
 async def get_user_train_checkpoint(
     run_id: uuid.UUID,
-    user: UserSchema = Depends(auth),
     db_session: Session = Depends(get_db_session),
     s3_client: S3ClientInterface = Depends(get_s3_client)
 ) -> StreamingResponse:
@@ -72,7 +71,7 @@ async def get_user_train_checkpoint(
     train_job_repository = TrainJobRepository(db_session)
 
     service = TrainResultsService(s3_client)
-    response = await service.get_user_train_checkpoint(run_id, user.id, train_job_repository)
+    response = await service.get_user_train_checkpoint(run_id, train_job_repository)
 
     return response
 

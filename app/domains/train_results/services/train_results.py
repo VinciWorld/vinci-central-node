@@ -55,7 +55,6 @@ class TrainResultsService():
     async def get_user_train_checkpoint(
         self,
         run_id: uuid.UUID,
-        user_id: uuid.UUID,
         train_job_repository: TrainJobRepository
     ) -> StreamingResponse:
         try:
@@ -63,13 +62,8 @@ class TrainResultsService():
             train_job_db = train_job_repository.get_by_run_id(run_id)
             if train_job_db is None:
                 raise HTTPException(status_code=404, detail=str(f"train job with run id: {run_id}, Not Found"))
-            elif train_job_db.created_by.id != user_id:
-                raise HTTPException(
-                    status_code=403,
-                    detail=str(f"Train job with run id: {run_id}, don't belong to user: {user_id}")
-                )
             
-            checkpoint_bytes = self.s3_client.get_model_checkpoint(run_id, user_id)
+            checkpoint_bytes = self.s3_client.get_model_checkpoint(run_id, train_job_db.created_by.id)
             checkpoint_data = checkpoint_bytes.getvalue()
 
             return StreamingResponse(

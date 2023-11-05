@@ -134,7 +134,6 @@ def _update_train_job_status(
         properties,
         body
 ):
-    logger.info(f"callback status")
     body_json = json.loads(body.decode('utf-8'))
     run_id = body_json.get("run_id")
     status = body_json.get("status")
