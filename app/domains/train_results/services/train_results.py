@@ -3,10 +3,11 @@ import io
 import logging
 import uuid
 
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from app.clients.s3.interface import S3ClientInterface
 from app.domains.train_job.repository.train_job import TrainJobRepository
+import train_file_bundle_pb2
 
 logger = logging.getLogger(__name__) 
 
@@ -99,27 +100,25 @@ class TrainResultsService():
                 )
             
             model_bytes, metrics_bytes = self.s3_client.get_user_train_results(run_id, user_id)
-    
-            boundary = "Boundary-" + str(uuid.uuid4())
-            headers = {
-                "Content-Type": f"multipart/mixed; boundary={boundary}"
-            }
+ 
+            logger.info("get byhtes")
+            train_file_bundle = train_file_bundle_pb2.TrainFileBundle()
+            model_file = train_file_bundle.trainFiles.add()
+            model_file.name = "model.onnx"
+            model_file.content = model_bytes.getvalue()
+            model_file.index = 0
 
-            def content_generator():
-                yield bytes(f"--{boundary}\r\n", 'utf-8')
-                yield bytes(f"Content-Disposition: form-data; name=model; filename=model.onnx\r\n", 'utf-8')
-                yield bytes("Content-Type: application/octet-stream\r\n\r\n", 'utf-8')
-                yield model_bytes.getvalue()
-                yield bytes(f"\r\n--{boundary}\r\n", 'utf-8')
-                yield bytes(f"Content-Disposition: form-data; name=metrics; filename=metrics.json\r\n", 'utf-8')
-                yield bytes("Content-Type: application/json\r\n\r\n", 'utf-8')
-                yield metrics_bytes.getvalue()
-                yield bytes(f"\r\n--{boundary}--", 'utf-8')
+            metrics_file = train_file_bundle.trainFiles.add()
+            metrics_file.name = "metrics.json"
+            metrics_file.content = metrics_bytes.getvalue()
+            metrics_file.index = 1
 
-            return StreamingResponse(content_generator(), headers=headers)
+
+            return Response(content=train_file_bundle.SerializeToString(), media_type='application/octet-stream')
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
     
     async def save_train_results(
             self,

@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends
 from app.Auth.auth import auth
 
 from app.db.connection import get_db_session
-from app.domains.core.repository.user_repository import get_default_user
 from app.domains.core.schemas.user import UserSchema
 
 from app.domains.train_job.repository.train_job import TrainJobRepository

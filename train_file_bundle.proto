@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message TrainFile {
+  string name = 1;
+  bytes content = 2;
+  int32 index = 3;
+}
+
+message TrainFileBundle {
+  repeated TrainFile trainFiles = 1;
+}
